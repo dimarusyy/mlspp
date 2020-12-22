@@ -22,7 +22,7 @@ LeafCount::LeafCount(const NodeCount w)
 }
 
 NodeCount::NodeCount(const LeafCount n)
-  : TreeIndex<size_t>(2 * (n.val - 1) + 1)
+  : TreeIndex(2 * (n.val - 1) + 1)
 {}
 
 namespace tree_math {

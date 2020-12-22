@@ -39,7 +39,7 @@ struct GroupContext
 };
 
 // Index into the session roster
-struct RosterIndex : public TreeIndex<size_t>
+struct RosterIndex : public TreeIndex
 {
   using TreeIndex::TreeIndex;
 };

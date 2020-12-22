@@ -50,50 +50,54 @@ struct is_unsigned
 }
 
 template <typename T>
-struct TreeIndex
+struct TreeIndexBase
 {
   typedef T value_type;
   value_type val;
 
-  TreeIndex()
+  TreeIndexBase()
     : val(0)
   {}
 
-  template<typename U, 
+  template<
+    typename U,
     typename std::enable_if<traits::is_unsigned<U>::value>::type* = nullptr>
-  explicit TreeIndex(U val_in)
+  explicit TreeIndexBase(U val_in)
     : val(static_cast<value_type>(val_in))
   {}
 
   TLS_SERIALIZABLE(val)
 };
 
+typedef TreeIndexBase<size_t> TreeIndex;
+
+// forward declaration
 struct NodeCount;
 
-struct LeafCount : public TreeIndex<size_t>
+struct LeafCount : public TreeIndex
 {
   using TreeIndex::TreeIndex;
   explicit LeafCount(const NodeCount w);
 };
 
-struct NodeCount : public TreeIndex<size_t>
+struct NodeCount : public TreeIndex
 {
   using TreeIndex::TreeIndex;
   explicit NodeCount(const LeafCount n);
 };
 
-struct LeafIndex : public TreeIndex<size_t>
+struct LeafIndex : public TreeIndex
 {
   using TreeIndex::TreeIndex;
   bool operator<(const LeafIndex other) const { return val < other.val; }
   bool operator<(const LeafCount other) const { return val < other.val; }
 };
 
-struct NodeIndex : public TreeIndex<size_t>
+struct NodeIndex : public TreeIndex
 {
   using TreeIndex::TreeIndex;
   explicit NodeIndex(const LeafIndex x)
-    : TreeIndex<size_t>(2 * x.val)
+    : TreeIndex(2 * x.val)
   {}
 
   bool operator<(const NodeIndex other) const { return val < other.val; }
