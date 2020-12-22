@@ -21,8 +21,8 @@ struct HashRatchet
   CipherSuite suite;
   NodeIndex node;
   bytes next_secret;
-  uint32_t next_generation;
-  std::map<uint32_t, KeyAndNonce> cache;
+  LeafIndex::value_type next_generation;
+  std::map<LeafIndex::value_type, KeyAndNonce> cache;
 
   size_t key_size;
   size_t nonce_size;
@@ -34,9 +34,9 @@ struct HashRatchet
 
   HashRatchet(CipherSuite suite_in, NodeIndex node_in, bytes base_secret_in);
 
-  std::tuple<uint32_t, KeyAndNonce> next();
-  KeyAndNonce get(uint32_t generation);
-  void erase(uint32_t generation);
+  std::tuple<LeafIndex::value_type, KeyAndNonce> next();
+  KeyAndNonce get(LeafIndex::value_type generation);
+  void erase(LeafIndex::value_type generation);
 };
 
 struct SecretTree
@@ -69,9 +69,9 @@ struct GroupKeySource
                  LeafCount group_size,
                  bytes encryption_secret);
 
-  std::tuple<uint32_t, KeyAndNonce> next(RatchetType type, LeafIndex sender);
-  KeyAndNonce get(RatchetType type, LeafIndex sender, uint32_t generation);
-  void erase(RatchetType type, LeafIndex sender, uint32_t generation);
+  std::tuple<LeafIndex::value_type, KeyAndNonce> next(RatchetType type, LeafIndex sender);
+  KeyAndNonce get(RatchetType type, LeafIndex sender, LeafIndex::value_type generation);
+  void erase(RatchetType type, LeafIndex sender, LeafIndex::value_type generation);
 
 private:
   CipherSuite suite;

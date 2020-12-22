@@ -39,9 +39,9 @@ struct GroupContext
 };
 
 // Index into the session roster
-struct RosterIndex : public UInt32
+struct RosterIndex : public TreeIndex<size_t>
 {
-  using UInt32::UInt32;
+  using TreeIndex::TreeIndex;
 };
 
 class State

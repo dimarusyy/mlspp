@@ -689,8 +689,8 @@ apply_reuse_guard(const ReuseGuard& guard, bytes& nonce)
 // } MLSSenderData;
 struct MLSSenderData
 {
-  uint32_t sender;
-  uint32_t generation;
+  size_t sender;
+  size_t generation;
   ReuseGuard reuse_guard;
 
   TLS_SERIALIZABLE(sender, generation, reuse_guard)

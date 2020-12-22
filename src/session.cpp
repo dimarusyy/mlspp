@@ -338,7 +338,7 @@ Session::current_epoch() const
   return inner->history.front().epoch();
 }
 
-uint32_t
+LeafIndex::value_type
 Session::index() const
 {
   return inner->history.front().index().val;

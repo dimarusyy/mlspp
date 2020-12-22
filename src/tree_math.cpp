@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-static const uint32_t one = 0x01;
+static const size_t one = 0x01;
 
 namespace mls {
 
@@ -22,33 +22,33 @@ LeafCount::LeafCount(const NodeCount w)
 }
 
 NodeCount::NodeCount(const LeafCount n)
-  : UInt32(2 * (n.val - 1) + 1)
+  : TreeIndex<size_t>(2 * (n.val - 1) + 1)
 {}
 
 namespace tree_math {
 
-static uint32_t
-log2(uint32_t x)
+static size_t
+log2(size_t x)
 {
   if (x == 0) {
     return 0;
   }
 
-  uint32_t k = 0;
+  size_t k = 0;
   while ((x >> k) > 0) {
     k += 1;
   }
   return k - 1;
 }
 
-uint32_t
+NodeIndex::value_type
 level(NodeIndex x)
 {
   if ((x.val & one) == 0) {
     return 0;
   }
 
-  uint32_t k = 0;
+  NodeIndex::value_type k = 0;
   while (((x.val >> k) & one) == 1) {
     k += 1;
   }
@@ -78,7 +78,7 @@ right(NodeIndex x, NodeCount w)
     return x;
   }
 
-  NodeIndex r{ x.val ^ (uint32_t(0x03) << (level(x) - 1)) };
+  NodeIndex r{ x.val ^ (size_t(0x03) << (level(x) - 1)) };
   while (r.val >= w.val) {
     r = left(r);
   }
@@ -189,8 +189,8 @@ ancestor(LeafIndex l, LeafIndex r)
     k += 1;
   }
 
-  uint32_t prefix = ln.val << k;
-  uint32_t stop = (1U << uint8_t(k - 1));
+  NodeIndex::value_type prefix = ln.val << k;
+  NodeIndex::value_type stop = (size_t(1) << uint8_t(k - 1));
   return NodeIndex(prefix + (stop - 1));
 }
 

@@ -4,6 +4,7 @@
 #include <mls/core_types.h>
 #include <mls/credential.h>
 #include <mls/crypto.h>
+#include <mls/tree_math.h>
 
 namespace mls {
 
@@ -69,7 +70,7 @@ public:
 
   // Information about the current state
   epoch_t current_epoch() const;
-  uint32_t index() const;
+  LeafIndex::value_type index() const;
   bytes do_export(const std::string& label,
                   const bytes& context,
                   size_t size) const;

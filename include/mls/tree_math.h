@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <tls/tls_syntax.h>
 #include <vector>
+#include <type_traits>
 
 // The below functions provide the index calculus for the tree
 // structures used in MLS.  They are premised on a "flat"
@@ -32,16 +33,36 @@ namespace mls {
 // Index types go in the overall namespace
 // XXX(rlb@ipv.sx): Seems like this stuff can probably get
 // simplified down a fair bit.
-struct UInt32
-{
-  uint32_t val;
 
-  UInt32()
+namespace traits {
+template<typename T>
+struct is_unsigned
+{
+  constexpr static bool value =
+    std::is_integral<T>::value &&
+    !std::is_same<T, bool>::value &&
+#if ((defined(_MSVC_LANG) && _MSVC_LANG > 201703L) || __cplusplus > 201703L)
+    !std::is_same<T, char8_t>::value &&
+#endif
+    !std::is_same<T, char16_t>::value &&
+    !std::is_same<T, char32_t>::value;
+};
+}
+
+template <typename T>
+struct TreeIndex
+{
+  typedef T value_type;
+  value_type val;
+
+  TreeIndex()
     : val(0)
   {}
 
-  explicit UInt32(uint32_t val_in)
-    : val(val_in)
+  template<typename U, 
+    typename std::enable_if<traits::is_unsigned<U>::value>::type* = nullptr>
+  explicit TreeIndex(U val_in)
+    : val(static_cast<value_type>(val_in))
   {}
 
   TLS_SERIALIZABLE(val)
@@ -49,30 +70,30 @@ struct UInt32
 
 struct NodeCount;
 
-struct LeafCount : public UInt32
+struct LeafCount : public TreeIndex<size_t>
 {
-  using UInt32::UInt32;
+  using TreeIndex::TreeIndex;
   explicit LeafCount(const NodeCount w);
 };
 
-struct NodeCount : public UInt32
+struct NodeCount : public TreeIndex<size_t>
 {
-  using UInt32::UInt32;
+  using TreeIndex::TreeIndex;
   explicit NodeCount(const LeafCount n);
 };
 
-struct LeafIndex : public UInt32
+struct LeafIndex : public TreeIndex<size_t>
 {
-  using UInt32::UInt32;
+  using TreeIndex::TreeIndex;
   bool operator<(const LeafIndex other) const { return val < other.val; }
   bool operator<(const LeafCount other) const { return val < other.val; }
 };
 
-struct NodeIndex : public UInt32
+struct NodeIndex : public TreeIndex<size_t>
 {
-  using UInt32::UInt32;
+  using TreeIndex::TreeIndex;
   explicit NodeIndex(const LeafIndex x)
-    : UInt32(2 * x.val)
+    : TreeIndex<size_t>(2 * x.val)
   {}
 
   bool operator<(const NodeIndex other) const { return val < other.val; }
@@ -81,7 +102,7 @@ struct NodeIndex : public UInt32
 // Internal namespace to keep these generic names clean
 namespace tree_math {
 
-uint32_t
+NodeIndex::value_type
 level(NodeIndex x);
 
 // Node relationships

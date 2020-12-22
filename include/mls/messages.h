@@ -245,7 +245,7 @@ enum struct SenderType : uint8_t
 struct Sender
 {
   SenderType sender_type{ SenderType::invalid };
-  uint32_t sender{ 0 };
+  size_t sender{ 0 };
 
   TLS_SERIALIZABLE(sender_type, sender)
 };

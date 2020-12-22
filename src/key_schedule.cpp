@@ -18,7 +18,7 @@ zeroize(bytes& data) // NOLINT(google-runtime-references)
 struct TreeContext
 {
   NodeIndex node;
-  uint32_t generation = 0;
+  NodeIndex::value_type generation = 0;
 
   TLS_SERIALIZABLE(node, generation)
 };
@@ -28,7 +28,7 @@ derive_tree_secret(CipherSuite suite,
                    const bytes& secret,
                    const std::string& label,
                    NodeIndex node,
-                   uint32_t generation,
+                   LeafIndex::value_type generation,
                    size_t length)
 {
   auto ctx = tls::marshal(TreeContext{ node, generation });
@@ -51,7 +51,7 @@ HashRatchet::HashRatchet(CipherSuite suite_in,
   , secret_size(suite.get().hpke.kdf.hash_size())
 {}
 
-std::tuple<uint32_t, KeyAndNonce>
+std::tuple<LeafIndex::value_type, KeyAndNonce>
 HashRatchet::next()
 {
   auto key = derive_tree_secret(
@@ -76,7 +76,7 @@ HashRatchet::next()
 // Otherwise, it would not be possible for a node to send to itself.  Keys can
 // be deleted once they are not needed by calling HashRatchet::erase().
 KeyAndNonce
-HashRatchet::get(uint32_t generation)
+HashRatchet::get(LeafIndex::value_type generation)
 {
   if (cache.count(generation) > 0) {
     auto out = cache[generation];
@@ -97,7 +97,7 @@ HashRatchet::get(uint32_t generation)
 }
 
 void
-HashRatchet::erase(uint32_t generation)
+HashRatchet::erase(LeafIndex::value_type generation)
 {
   if (cache.count(generation) == 0) {
     return;
@@ -204,20 +204,20 @@ GroupKeySource::chain(RatchetType type, LeafIndex sender)
   return chains[key];
 }
 
-std::tuple<uint32_t, KeyAndNonce>
+std::tuple<LeafIndex::value_type, KeyAndNonce>
 GroupKeySource::next(RatchetType type, LeafIndex sender)
 {
   return chain(type, sender).next();
 }
 
 KeyAndNonce
-GroupKeySource::get(RatchetType type, LeafIndex sender, uint32_t generation)
+GroupKeySource::get(RatchetType type, LeafIndex sender,  LeafIndex::value_type generation)
 {
   return chain(type, sender).get(generation);
 }
 
 void
-GroupKeySource::erase(RatchetType type, LeafIndex sender, uint32_t generation)
+GroupKeySource::erase(RatchetType type, LeafIndex sender,  LeafIndex::value_type generation)
 {
   return chain(type, sender).erase(generation);
 }
@@ -231,7 +231,7 @@ KeyScheduleEpoch::KeyScheduleEpoch(CipherSuite suite_in)
 {
   auto secret_size = suite.get().digest.hash_size();
   epoch_secret = random_bytes(secret_size);
-  init_secrets(LeafCount{ 1 });
+  init_secrets(LeafCount{ 1U });
 }
 
 KeyScheduleEpoch::KeyScheduleEpoch(CipherSuite suite_in,
